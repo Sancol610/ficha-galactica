@@ -14,7 +14,7 @@ function App() {
 
   // Cargar lista de personajes al montar
   useEffect(() => {
-    fetch("https://swapi.dev/api/people/?page=1")
+    fetch("https://swapi.py4e.com/api/people/?page=1")
       .then((res) => res.json())
       .then((data) => {
         setPersonajes(data.results);
@@ -28,16 +28,7 @@ function App() {
     setLoading(true);
     fetch(personajeUrl)
       .then((res) => res.json())
-      .then(async (data) => {
-        // Fetch extra para el planeta
-        try {
-          const homeworldRes = await fetch(data.homeworld);
-          const homeworldData = await homeworldRes.json();
-          data.homeworldName = homeworldData.name;
-        } catch (e) {
-          console.error("Error cargando planeta:", e);
-          data.homeworldName = "Desconocido";
-        }
+      .then((data) => {
         setPersonajeData(data);
         setLoading(false);
       })
@@ -47,29 +38,16 @@ function App() {
       });
   }, [personajeUrl]);
 
-  // Recuperar ficha guardada del localStorage al iniciar
-  useEffect(() => {
-    const savedFicha = localStorage.getItem("ficha");
-    if (savedFicha) {
-      setFichaFinal(JSON.parse(savedFicha));
-    }
-  }, []);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!personajeData) return;
-
-    const nuevaFicha = {
+    setFichaFinal({
       nombre: personajeData.name,
       altura: personajeData.height,
       nacimiento: personajeData.birth_year,
-      planeta: personajeData.homeworldName,
       apodo,
       favorito,
-    };
-
-    setFichaFinal(nuevaFicha);
-    localStorage.setItem("ficha", JSON.stringify(nuevaFicha));
+    });
   };
 
   return (
@@ -101,7 +79,6 @@ function App() {
           <h2>{personajeData.name}</h2>
           <p>Altura: {personajeData.height} cm</p>
           <p>Año de nacimiento: {personajeData.birth_year}</p>
-          <p>Planeta: {personajeData.homeworldName}</p>
         </div>
       )}
 
@@ -115,7 +92,6 @@ function App() {
               value={apodo}
               onChange={(e) => setApodo(e.target.value)}
               required
-              minLength={2}
             />
           </label>
 
@@ -139,7 +115,6 @@ function App() {
           <p>Nombre: {fichaFinal.nombre}</p>
           <p>Altura: {fichaFinal.altura} cm</p>
           <p>Nacimiento: {fichaFinal.nacimiento}</p>
-          <p>Planeta: {fichaFinal.planeta}</p>
           <p>Apodo: {fichaFinal.apodo}</p>
           <p>Favorito: {fichaFinal.favorito ? "Sí" : "No"}</p>
         </div>
