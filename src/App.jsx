@@ -115,7 +115,7 @@ function App() {
               value={apodo}
               onChange={(e) => setApodo(e.target.value)}
               required
-              minLength={2} // ✅ Validación extra
+              minLength={2}
             />
           </label>
 
