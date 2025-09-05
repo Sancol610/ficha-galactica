@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import "./App.css";
+import "./App.css"; // estilos
 
 function App() {
   const [personajes, setPersonajes] = useState([]);
   const [personajeUrl, setPersonajeUrl] = useState("");
   const [personajeData, setPersonajeData] = useState(null);
+  const [homeworld, setHomeworld] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Formulario
@@ -12,7 +13,7 @@ function App() {
   const [favorito, setFavorito] = useState(false);
   const [fichaFinal, setFichaFinal] = useState(null);
 
-  // Cargar lista de personajes al montar
+  // Al montar: cargar personajes
   useEffect(() => {
     fetch("https://swapi.py4e.com/api/people/?page=1")
       .then((res) => res.json())
@@ -30,6 +31,13 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         setPersonajeData(data);
+        // Cargar homeworld
+        if (data.homeworld) {
+          fetch(data.homeworld)
+            .then((res) => res.json())
+            .then((planet) => setHomeworld(planet.name || "Desconocido"))
+            .catch(() => setHomeworld("Desconocido"));
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -38,16 +46,35 @@ function App() {
       });
   }, [personajeUrl]);
 
+  // Recuperar ficha guardada en localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("ficha");
+    if (saved) {
+      setFichaFinal(JSON.parse(saved));
+    }
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!personajeData) return;
-    setFichaFinal({
+
+    // Validación apodo
+    if (apodo.trim().length < 2) {
+      alert("El apodo debe tener al menos 2 caracteres");
+      return;
+    }
+
+    const ficha = {
       nombre: personajeData.name,
       altura: personajeData.height,
       nacimiento: personajeData.birth_year,
+      planeta: homeworld,
       apodo,
       favorito,
-    });
+    };
+
+    setFichaFinal(ficha);
+    localStorage.setItem("ficha", JSON.stringify(ficha));
   };
 
   return (
@@ -79,6 +106,7 @@ function App() {
           <h2>{personajeData.name}</h2>
           <p>Altura: {personajeData.height} cm</p>
           <p>Año de nacimiento: {personajeData.birth_year}</p>
+          <p>Planeta: {homeworld}</p>
         </div>
       )}
 
@@ -115,6 +143,7 @@ function App() {
           <p>Nombre: {fichaFinal.nombre}</p>
           <p>Altura: {fichaFinal.altura} cm</p>
           <p>Nacimiento: {fichaFinal.nacimiento}</p>
+          <p>Planeta: {fichaFinal.planeta}</p>
           <p>Apodo: {fichaFinal.apodo}</p>
           <p>Favorito: {fichaFinal.favorito ? "Sí" : "No"}</p>
         </div>
